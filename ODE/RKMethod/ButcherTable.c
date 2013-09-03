@@ -8,6 +8,7 @@ void InitializeButcherTable()
 	euler = CreateERKButcherTable(1, 1);
 	euler.c[0] = 0;
 	euler.b[0] = 1;
+	euler.precision = 2;
 }
 
 ButcherTable GetButcherTable(RKMethodType type)
@@ -44,7 +45,7 @@ ButcherTable CreateERKButcherTable(uint64_t stage, uint64_t embed)
 void DeleteERKButcherTable(ButcherTable *b)
 {
 	free(b->buf);
-	b->stage = b->embed = 0;
+	b->stage = b->embed = b->precision = 0;
 	b->b = b->c = b->buf = 0;
 	b->a = 0;
 }

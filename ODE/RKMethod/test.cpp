@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <ctime>
 
 #include "EulerMethod.h"
 #include "ERKMethod.h"
@@ -22,7 +23,7 @@ int main()
 	int64_t dim = 30;
 	double x1[dim], x2[dim];
 	double *x = x1, *y = x2, *temp;
-	double a_err = 0, r_err = 1e-4;
+	double a_err = 0, r_err = 1e-14;
 	double h = 0.000005, t = 0;
 	uint64_t count = 0;
 	ButcherTable b;
@@ -30,6 +31,7 @@ int main()
 	for(int i = 0; i < dim; ++i)
 		x[i] = 1;
 
+	clock_t t0 = clock();
 	while(t < 1)
 	{
 		count++;
@@ -39,18 +41,21 @@ int main()
 		x = y;
 		y = temp;
 	}
+	clock_t t1 = clock();
+	std::cout << "time" << (t1 - t0)/(double)CLOCKS_PER_SEC << std::endl;
 	std::cout << t << std::endl;
 	std::cout << count << std::endl;
 	std::cout << f_count << std::endl;
 	for(int i = 0; i < dim; ++i)
 	{
 		std::cout << "x(0)  = " << 1 << std::endl;
-		std::cout << "x(10) = " << x[i] << std::endl;
+		std::cout << "x(1) = " << x[i] << std::endl;
 		std::cout << "x_tru = " << exp(10*i + 1) << std::endl;
 		std::cout << "r_err = " << fabs((x[i] - exp(10*i + 1))/ exp(10*i + 1)) << "...:" << fabs((x[i] - exp(10*i + 1))/ exp(10*i + 1))/count <<  std::endl << std::endl;
 	}
 
 	InitializeButcherTable();
+	
 	FinalizeButcherTable();
 
 	return 0;

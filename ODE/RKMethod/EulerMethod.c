@@ -34,7 +34,7 @@ void *EulerMethodAuto(double *start, void *param, double *next, vfunc f, double 
 			e_max = ((t_err > e_max)?(t_err):(e_max));
 		}
 		H = *h;
-		*h *= 0.8 * (a_err + t*r_err)/e_max;
+		*h *= 0.95 * pow((a_err + t*r_err)/e_max, 0.5);
 	}while(e_max > (a_err + r_err * t));
 	
 	return &H;

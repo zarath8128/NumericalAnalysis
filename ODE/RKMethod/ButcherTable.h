@@ -21,6 +21,7 @@ namespace zarath
 			double **a;
 			uint64_t stage;
 			uint64_t embed;			
+			uint64_t precision;
 		}ButcherTable;
 
 		typedef enum tag_RKMethodType
