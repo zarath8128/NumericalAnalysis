@@ -1,5 +1,5 @@
-CFLAGS=-std=c99
-CXXFLAGS=-std=c++0x
+CFLAGS=-std=c99 -O3
+CXXFLAGS=-std=c++0x -O3
 OBJECTS=EulerMethod.o ERKMethod.o ButcherTable.o
 
 all:test

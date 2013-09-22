@@ -3,6 +3,7 @@
 
 #ifdef __cplusplus
 #include <cstdint>
+#include <iostream>
 #else
 #include <stdint.h>
 #endif
@@ -13,20 +14,26 @@ namespace zarath
 	extern "C"
 	{
 #endif
+		/*
+			buf = {double c[stage], double a[stage - 1][x], double b[embed][stage], double *a[stage - 1], double *b[embed], uint64_t *precision[embed]}
+		*/
 		typedef struct tag_BucherTable
 		{
 			void *buf;
 			double *c;
-			double *b;
+			double **b;
 			double **a;
 			uint64_t stage;
-			uint64_t embed;			
-			uint64_t precision;
+			uint64_t embed;	
+			uint64_t *precision;
 		}ButcherTable;
 
 		typedef enum tag_RKMethodType
 		{
 			Euler,
+			RungeKutta,
+			RungeKutta3_8,
+			RKF45,
 		}RKMethodType;
 
 		extern ButcherTable euler;
@@ -40,6 +47,7 @@ namespace zarath
 
 #ifdef __cplusplus
 	}
+	std::ostream &operator<<(std::ostream &dest, ButcherTable &b);
 }
 #endif
 

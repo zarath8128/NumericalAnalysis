@@ -1,6 +1,6 @@
 
-CC=gcc-4.8.1
-CXX=g++-4.8.1
+CC=gcc
+CXX=g++
 
 CFALGS = -O0
 CXXFLAGS = -O0 -lMath -L./

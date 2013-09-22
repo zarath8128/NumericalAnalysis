@@ -5,6 +5,7 @@
 #endif
 
 #include "ButcherTable.h"
+#include "../ODE.h"
 
 #ifdef __cplusplus
 namespace zarath
@@ -14,6 +15,8 @@ namespace zarath
 #endif
 		extern ButcherTable bt;
 		void SetButcherTable(ButcherTable butcher);
+		void ClearButcherTable();
+		void *ERKMethod(double *start, void *param, double *next, vfunc f, double *h, double *abs_err, double *rel_err);
 	 
 #ifdef __cplusplus
 	}

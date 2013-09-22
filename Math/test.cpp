@@ -6,7 +6,7 @@
 
 int main()
 {
-	double base = 3, exp = 2;
+	double base = 3.5, exp = 2.5;
 	double temp = 0;
 	int count = 100000;
 	std::cout << pow(base, exp) << std::endl;
