@@ -25,7 +25,7 @@ int main()
 	clock_t tick = clock();
 	uint64_t dim = 400;
 	double t = 0, dt = 0, tmax = 7;
-	double abs_err = 0, rel_err = 1e-3;
+	double abs_err = 0, rel_err = 1e-0;
 	double xy[2*dim];
 	double x[dim];
 
@@ -43,7 +43,7 @@ int main()
 	InitializeButcherTable();
 	SetButcherTable(GetButcherTable(RKF45));
 
-	rkmethod rm = EulerMethodAuto;
+	rkmethod rm = ERKMethod;
 	GPData gpd = CreateGPData();
 	SetWindow(&gpd, 0, 0, 640, 640);
 	SetRange(&gpd, range.min, range.max, -0.2, 1.2);

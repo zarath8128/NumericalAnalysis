@@ -1,4 +1,4 @@
-CXXFLAGS=-std=c++0x ${INCLUDEPATH}
+CXXFLAGS=-std=c++0x ${INCLUDEPATH} -O3
 CFLAGS=-std=c99 ${INCLUDEPATH}
 
 INCLUDEPATH=-I${HOME}/NumericalAnalysis
