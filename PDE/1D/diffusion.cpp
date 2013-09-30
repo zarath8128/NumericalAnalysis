@@ -1,7 +1,7 @@
 #include "ODE/RKMethod/ERKMethod.h"
 #include "ODE/RKMethod/EulerMethod.h"
 #include "ODE/RKMethod/ButcherTable.h"
-#include "GPDriver.h"
+#include "Graphics/GPDriver/GPDriver.h"
 #include <cmath>
 #include <cstdint>
 #include <ctime>
@@ -29,11 +29,11 @@ struct
 int main()
 {
 	clock_t tick = clock();
-	uint64_t dim = 400, w = 200, c = 0;
+	uint64_t dim = 400, w = 2000, c = 0, n = 1;
 	double t = 0, dt = 0, tmax = 20;
 	double abs_err = 0, rel_err = 1e-13;
-	double xy[2*dim];
-	double x[dim];
+	double xy[2*dim], xy2[2*dim];
+	double x[dim], x2[dim];
 	timespec slp;
 	slp.tv_sec = 0;
 	slp.tv_nsec = 1000000*26;
@@ -44,10 +44,10 @@ int main()
 
 	//3point runge-kutta 0.69983 - 0.69984 time:20
 	//5point runge-kutta 0.52487 - 0.52488 time:20
-	dt = 0.000001;//0.5 * ((range.max - range.min)/dim)*((range.max - range.min)/dim);
+	dt = 0.5 * ((range.max - range.min)/dim)*((range.max - range.min)/dim);
 
 	for(int i = 0; i < dim; ++i)
-		x[i] = cos(pos(i));
+		x[i] = x2[i] = cos(n*pos(i));
 
 	InitializeButcherTable();
 	SetButcherTable(GetButcherTable(RungeKutta));
@@ -55,24 +55,26 @@ int main()
 	rkmethod rm = ERKMethod;
 	GPData gpd = CreateGPData();
 	SetWindow(&gpd, 0, 0, 640, 640);
-	SetRange(&gpd, range.min, range.max, -2, 2);
+	SetRange(&gpd, range.min, range.max, 0);
+	SetRange(&gpd, -2, 2, 1);
+	SetFlags(&gpd, withLine);
 
-			for(unsigned int i = 0; i < dim; ++i)
-				xy[2*i] = pos(i), xy[2*i + 1] = x[i];
-			Plot(&gpd, xy, dim);
 	do
 	{
 		if(c++ % w == 0)
-			rm(x, &dim, x, Wave21, &dt, &abs_err, &rel_err), t += dt;
+			rm(x, &dim, x, Diffusion1, &dt, &abs_err, &rel_err), t += dt;
 		if(abs(clock() - tick)/(double)CLOCKS_PER_SEC > (1./60))
 		{
 			tick = clock();
 			for(unsigned int i = 0; i < dim; ++i)
-				xy[2*i] = pos(i), xy[2*i + 1] = x[i];
+				xy[2*i] = xy2[2*i] = pos(i), xy[2*i + 1] = x[i], xy2[2*i + 1] = x2[i];
 			Plot(&gpd, xy, dim);
+			rePlot(&gpd, xy2, dim);
 			std::cerr << "\rt = " << t << std::fflush;
 		}
 	}while(t < tmax);
+
+	DeleteGPData(&gpd);
 
 	FinalizeButcherTable();
 }

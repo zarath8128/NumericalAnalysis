@@ -2,18 +2,16 @@ CXXFLAGS=-std=c++0x ${INCLUDEPATH} -O3
 CFLAGS=-std=c99 ${INCLUDEPATH}
 
 INCLUDEPATH=-I${HOME}/NumericalAnalysis
-LIBRARY=${HOME}/NumericalAnalysis/ODE/RKMethod/libRKMethod.a
+LIBRARY=${HOME}/NumericalAnalysis/ODE/RKMethod/libRKMethod.a ${HOME}/NumericalAnalysis/Graphics/GPDriver/libGPDriver.a
 
 all:test diffusion
 clean:
 	rm -f *.[ao] test diffusion
 
-test:libGPDriver.a
+test:${LIBRARY}
 
-diffusion:${LIBRARY} libGPDriver.a
+diffusion:${LIBRARY}
 
 ${LIBRARY}:
 	
 
-libGPDriver.a:GPDriver.o
-	ar r $@ $^
