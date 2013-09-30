@@ -52,7 +52,18 @@ extern "C"
 	{
 		fprintf(gpd->gp, "set xrange[%f:%f]\n", gpd->min[0], gpd->max[0]);
 		fprintf(gpd->gp, "set yrange[%f:%f]\n", gpd->min[1], gpd->max[1]);
-		fprintf(gpd->gp, "%s '-' %s %s%s\n", ((gpd->flags & ploted)?("refresh"):("plot")), (((withLine | withPoint) & gpd->flags)?("w"):("")), ((withLine & gpd->flags)?("l"):("")), ((withPoint & gpd->flags)?("p"):("")));
+		fprintf(gpd->gp, "%s '-' %s %s%s\n", "plot", (((withLine | withPoint) & gpd->flags)?("w"):("")), ((withLine & gpd->flags)?("l"):("")), ((withPoint & gpd->flags)?("p"):("")));
+		for(unsigned int i = 0; i < len; ++i)
+				fprintf(gpd->gp, "%f %f\n", data[2*i], data[2*i + 1]);
+		fprintf(gpd->gp, "e\n");
+		fflush(gpd->gp);
+	}
+
+	void rePlot(GPData *gpd, double *data, unsigned int len)
+	{
+		fprintf(gpd->gp, "set xrange[%f:%f]\n", gpd->min[0], gpd->max[0]);
+		fprintf(gpd->gp, "set yrange[%f:%f]\n", gpd->min[1], gpd->max[1]);
+		fprintf(gpd->gp, "%s\n", "replot");
 		for(unsigned int i = 0; i < len; ++i)
 				fprintf(gpd->gp, "%f %f\n", data[2*i], data[2*i + 1]);
 		fprintf(gpd->gp, "e\n");

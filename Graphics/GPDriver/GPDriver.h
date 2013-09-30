@@ -41,6 +41,7 @@ namespace zarath
 			void ClearFlags(GPData *gpd, int flags);
 			void InitializeGP(GPData *gpd);
 			void Plot(GPData *gpd, double *data, unsigned int len);
+			void rePlot(GPData *gpd, double *data, unsigned int len);
 			void SPlot(GPData *gpd, double *data, unsigned int xlen, unsigned int ylen);
 			void DeleteGPData(GPData *gpd);
 
