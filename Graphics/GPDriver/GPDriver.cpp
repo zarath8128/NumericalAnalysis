@@ -108,4 +108,6 @@ std::ostream &operator<<(std::ostream &dest, GPData &gpd)
 	dest << "(width, height) = (" << gpd.width << ", " << gpd.height << ")\n";
 	dest << "xrange[" << gpd.min[0] << ", " << gpd.max[0] << "]\n";
 	dest << "yrange[" << gpd.min[1] << ", " << gpd.max[1] << "]\n";
+	return dest;
 }
+

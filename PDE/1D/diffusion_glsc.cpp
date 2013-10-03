@@ -1,16 +1,15 @@
 #include "ODE/RKMethod/ERKMethod.h"
 #include "ODE/RKMethod/EulerMethod.h"
 #include "ODE/RKMethod/ButcherTable.h"
-#include "Graphics/GPDriver/GPDriver.h"
 #include <cmath>
 #include <stdint.h>
 #include <ctime>
 #include <iostream>
 #include <cstdio>
 #include <unistd.h>
+#include <glsc.h>
 
 using namespace zarath;
-using namespace GPDriver;
 
 void* Wave1(double *x, void *param, double *dx);
 void* Wave11(double *x, void *param, double *dx);
@@ -50,12 +49,12 @@ double integ(double* x, int len)
 
 int main()
 {
-	clock_t tick = clock();
 	uint64_t dim = 50, w = 2000, c = 0, n = 1;
 	double t = 0, dt = 0, tmax = 20;
 	double abs_err = 0, rel_err = 1e-0;
 	double xy[2*dim];
 	double x[dim];
+	double ue[dim];
 
 	range.min = -M_PI/2;
 	range.max = M_PI/2;
@@ -73,41 +72,50 @@ int main()
 	SetButcherTable(GetButcherTable(RKF45));
 
 	rkmethod rm = ERKMethod;
-	GPData gpd = CreateGPData();
-	SetWindow(&gpd, 0, 0, 640, 640);
-	SetRange(&gpd, range.min, range.max, 0);
-	SetRange(&gpd, -2, 2, 1);
-	SetFlags(&gpd, withLine);
-/*			for(unsigned int i = 0; i < dim; ++i)
-				xy[2*i] = pos(i), xy[2*i + 1] = x[i];
-			Plot(&gpd, xy, dim);
-			double err[dim];
-			for(int i = 0; i < range.point_num; ++i)
-				err[i] = fabs(x[i] - u_exact(t, pos(i)));
-			std::cout << integ(err, range.point_num) << " " << t << std::endl;
-	t = 0.1;
-*/	do
+
+	g_init("plot", 200, 200);
+	g_device(G_DISP);
+
+	g_def_scale(0, range.min - 1, range.max + 1, range.min - 1, range.max + 1, 0, 0, 200, 200);
+
+	g_sel_scale(0);
+	do
 	{
-		if(c++ % w == 0){
-			t += *(double*)rm(x, &dim, x, Diffusion1, &dt, &abs_err, &rel_err);
-		  dt = DT;}
-		if(abs(clock() - tick)/(double)CLOCKS_PER_SEC > (1./60))
-		{
-			tick = clock();
-			for(unsigned int i = 0; i < dim; ++i)
-				xy[2*i] = pos(i), xy[2*i + 1] = x[i];
-			Plot(&gpd, xy, dim);
-			double err[dim];
-			for(int i = 0; i < range.point_num; ++i)
-				err[i] = fabs(x[i] - u_exact(t, pos(i)));
-			std::cout << std::scientific << integ(err, range.point_num) << " " << t << std::endl;
-			//printf("%g %g¥n", integ(err, range.point_num), t);
-		}
+		g_sleep(1./60);
+		g_cls();
+
+		g_line_color(G_BLACK);
+		g_move(range.min, 0);
+		g_plot(range.max, 0);
+
+		g_move(0, range.min);
+		g_plot(0, range.max);
+
+		t += *(double*)rm(x, &dim, x, Diffusion1, &dt, &abs_err, &rel_err);
+	 	dt = DT;
+
+		g_line_color(G_GREEN);
+		g_move(pos(0), x[0]);
+		for(int i = 0; i < dim; ++i)
+			g_plot(pos(i), x[i]);
+		
+		double err[dim];
+		for(int i = 0; i < range.point_num; ++i)
+			err[i] = fabs(x[i] - (ue[i] = u_exact(t, pos(i))));
+
+		g_line_color(G_BLUE);
+		g_move(pos(0), ue[0]);
+		for(int i = 0; i < dim; ++i)
+			g_plot(pos(i), ue[i]);
+
+
+		std::cout << std::scientific << integ(err, range.point_num) << " " << t << std::endl;
+		std::cerr << "\r" << "r_err = " << std::scientific << integ(err, range.point_num)/integ(ue, dim) << " t = " << t;
 	}while(t > 0);
-	DeleteGPData(&gpd);
+
+	g_term();
 
 	FinalizeButcherTable();
-	std::cout << t << std::endl;
 }
 
 void* Wave1(double *x, void *param, double *dx)

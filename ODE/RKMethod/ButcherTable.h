@@ -2,7 +2,7 @@
 #define ZARATH_ODE_BUTCHER_TABLE_H
 
 #ifdef __cplusplus
-#include <cstdint>
+#include <stdint.h>
 #include <iostream>
 #else
 #include <stdint.h>
