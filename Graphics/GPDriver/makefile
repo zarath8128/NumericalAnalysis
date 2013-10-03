@@ -1,6 +1,3 @@
-CC=icc
-CXX=icpc
-
 CFLAGS=-std=c99
 CXXFLAGS=-std=c++0x
 PRODUCT=libGPDriver.a

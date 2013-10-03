@@ -31,7 +31,7 @@ namespace zarath
 			{
 				ploted = 0x01,
 				withLine = 0x02,
-				withPoint = 0x03,
+				withPoint = 0x04,
 			};
 
 			GPData CreateGPData();

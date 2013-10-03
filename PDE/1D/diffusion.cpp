@@ -3,9 +3,10 @@
 #include "ODE/RKMethod/ButcherTable.h"
 #include "Graphics/GPDriver/GPDriver.h"
 #include <cmath>
-#include <cstdint>
+#include <stdint.h>
 #include <ctime>
 #include <iostream>
+#include <cstdio>
 #include <unistd.h>
 
 using namespace zarath;
@@ -24,16 +25,27 @@ struct
 {
 	double min, max;
 	unsigned int point_num;
+	double D;
 }range;
+
+double u_exact(double t, double x){return exp(-range.D*t)*cos(x);}
+double integ(double* x, int len)
+{
+	double dx = fabs(x[1] - x[0]);
+	double sum = 0;
+	for(int i = 0; i < len; ++i)
+		sum += x[i]*dx;
+	return sum;
+}
 
 int main()
 {
 	clock_t tick = clock();
-	uint64_t dim = 400, w = 2000, c = 0, n = 1;
+	uint64_t dim = 50, w = 2000, c = 0, n = 1;
 	double t = 0, dt = 0, tmax = 20;
-	double abs_err = 0, rel_err = 1e-13;
-	double xy[2*dim], xy2[2*dim];
-	double x[dim], x2[dim];
+	double abs_err = 0, rel_err = 1e-0;
+	double xy[2*dim];
+	double x[dim];
 	timespec slp;
 	slp.tv_sec = 0;
 	slp.tv_nsec = 1000000*26;
@@ -41,16 +53,17 @@ int main()
 	range.min = -M_PI/2;
 	range.max = M_PI/2;
 	range.point_num = dim;
+	range.D = 1;
 
 	//3point runge-kutta 0.69983 - 0.69984 time:20
 	//5point runge-kutta 0.52487 - 0.52488 time:20
-	dt = 0.5 * ((range.max - range.min)/dim)*((range.max - range.min)/dim);
+	double DT = dt = 0.75 * ((range.max - range.min)/dim)*((range.max - range.min)/dim);
 
 	for(int i = 0; i < dim; ++i)
-		x[i] = x2[i] = cos(n*pos(i));
+		x[i] = cos(pos(i));
 
 	InitializeButcherTable();
-	SetButcherTable(GetButcherTable(RungeKutta));
+	SetButcherTable(GetButcherTable(RKF45));
 
 	rkmethod rm = ERKMethod;
 	GPData gpd = CreateGPData();
@@ -58,25 +71,36 @@ int main()
 	SetRange(&gpd, range.min, range.max, 0);
 	SetRange(&gpd, -2, 2, 1);
 	SetFlags(&gpd, withLine);
-
-	do
+/*			for(unsigned int i = 0; i < dim; ++i)
+				xy[2*i] = pos(i), xy[2*i + 1] = x[i];
+			Plot(&gpd, xy, dim);
+			double err[dim];
+			for(int i = 0; i < range.point_num; ++i)
+				err[i] = fabs(x[i] - u_exact(t, pos(i)));
+			std::cout << integ(err, range.point_num) << " " << t << std::endl;
+	t = 0.1;
+*/	do
 	{
-		if(c++ % w == 0)
-			rm(x, &dim, x, Diffusion1, &dt, &abs_err, &rel_err), t += dt;
+		if(c++ % w == 0){
+			t += *(double*)rm(x, &dim, x, Diffusion1, &dt, &abs_err, &rel_err);
+		  dt = DT;}
 		if(abs(clock() - tick)/(double)CLOCKS_PER_SEC > (1./60))
 		{
 			tick = clock();
 			for(unsigned int i = 0; i < dim; ++i)
-				xy[2*i] = xy2[2*i] = pos(i), xy[2*i + 1] = x[i], xy2[2*i + 1] = x2[i];
+				xy[2*i] = pos(i), xy[2*i + 1] = x[i];
 			Plot(&gpd, xy, dim);
-			rePlot(&gpd, xy2, dim);
-			std::cerr << "\rt = " << t << std::fflush;
+			double err[dim];
+			for(int i = 0; i < range.point_num; ++i)
+				err[i] = fabs(x[i] - u_exact(t, pos(i)));
+			std::cout << std::scientific << integ(err, range.point_num) << " " << t << std::endl;
+			//printf("%g %g¥n", integ(err, range.point_num), t);
 		}
-	}while(t < tmax);
-
+	}while(t > 0);
 	DeleteGPData(&gpd);
 
 	FinalizeButcherTable();
+	std::cout << t << std::endl;
 }
 
 void* Wave1(double *x, void *param, double *dx)
@@ -157,5 +181,6 @@ void* Diffusion2(double *x, void *param, double* dx)
 
 double pos(unsigned int index)
 {
-	return index*(range.max - range.min)/(range.point_num - 1) + range.min;
+	double dx = (range.max - range.min)/range.point_num;
+	return index*dx + range.min + dx/2;
 }
