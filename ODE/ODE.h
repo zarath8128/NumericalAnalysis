@@ -2,7 +2,7 @@
 #define ZARATH_ODE_ODE_H
 
 #ifdef __cplusplus
-#include <cstdint>
+#include <stdint.h>
 #include <cmath>
 #else
 #include <stdint.h>
