@@ -20,6 +20,16 @@ void* Diffusion21(double *x, void *param, double* dx);
 void* Diffusion2(double *x, void *param, double* dx);
 double pos(unsigned int index);
 
+void *PCMethod(double *x, void *param, double *next_x, vfunc f, double *dt, double *abs_err, double *rel_err)
+{
+	uint64_t dim = *(uint64_t*)param;
+	double buf[dim], buf2[dim];
+	ERKMethod(x, param, buf, f, dt, abs_err, rel_err);
+	f(buf, param, buf2);
+	for(int i = 0; i < dim; ++i)
+		next_x[i] = x[i] + buf2[i]* *dt;
+}
+
 struct
 {
 	double min, max;
@@ -29,9 +39,9 @@ struct
 int main()
 {
 	clock_t tick = clock();
-	uint64_t dim = 400, w = 2000, c = 0, n = 1;
+	uint64_t dim = 400, w = 20000, c = 0, n = 2;
 	double t = 0, dt = 0, tmax = 20;
-	double abs_err = 0, rel_err = 1e-13;
+	double abs_err = 0, rel_err = 1e-0;
 	double xy[2*dim], xy2[2*dim];
 	double x[dim], x2[dim];
 	timespec slp;
@@ -44,13 +54,13 @@ int main()
 
 	//3point runge-kutta 0.69983 - 0.69984 time:20
 	//5point runge-kutta 0.52487 - 0.52488 time:20
-	dt = 0.5 * ((range.max - range.min)/dim)*((range.max - range.min)/dim);
+	dt = 0.66 * ((range.max - range.min)/dim)*((range.max - range.min)/dim);
 
 	for(int i = 0; i < dim; ++i)
 		x[i] = x2[i] = cos(n*pos(i));
 
 	InitializeButcherTable();
-	SetButcherTable(GetButcherTable(RungeKutta));
+	SetButcherTable(GetButcherTable(RKF45));
 
 	rkmethod rm = ERKMethod;
 	GPData gpd = CreateGPData();
@@ -67,10 +77,10 @@ int main()
 		{
 			tick = clock();
 			for(unsigned int i = 0; i < dim; ++i)
-				xy[2*i] = xy2[2*i] = pos(i), xy[2*i + 1] = x[i], xy2[2*i + 1] = x2[i];
+				xy[2*i] = pos(i), xy[2*i + 1] = x[i];
 			Plot(&gpd, xy, dim);
-			rePlot(&gpd, xy2, dim);
-			std::cerr << "\rt = " << t << std::fflush;
+			std::cerr << "\rxy[1] = " << xy[1] << std::fflush;
+			//std::cerr << "\rt = " << t << std::fflush;
 		}
 	}while(t < tmax);
 
