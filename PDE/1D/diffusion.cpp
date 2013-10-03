@@ -24,8 +24,8 @@ int main()
 {
 	clock_t tick = clock();
 	uint64_t dim = 400;
-	double t = 0, dt = 0, tmax = 7;
-	double abs_err = 0, rel_err = 1e-3;
+	double t = 0, dt = 0, tmax = 12;
+	double abs_err = 0, rel_err = 1e-0;
 	double xy[2*dim];
 	double x[dim];
 
@@ -35,7 +35,7 @@ int main()
 
 	//3point runge-kutta 0.69986 - 0.69985
 	//5point runge-kutta 0.52489 - 0.52488
-	dt = 0.5 * ((range.max - range.min)/dim)*((range.max - range.min)/dim);
+	dt = 0.69986 * ((range.max - range.min)/dim)*((range.max - range.min)/dim);
 
 	for(int i = 0; i < dim; ++i)
 		x[i] = cos(pos(i));
@@ -43,14 +43,14 @@ int main()
 	InitializeButcherTable();
 	SetButcherTable(GetButcherTable(RKF45));
 
-	rkmethod rm = EulerMethodAuto;
+	rkmethod rm = ERKMethod;
 	GPData gpd = CreateGPData();
 	SetWindow(&gpd, 0, 0, 640, 640);
 	SetRange(&gpd, range.min, range.max, -0.2, 1.2);
 
 	do
 	{
-		rm(x, &dim, x, Diffusion2, &dt, &abs_err, &rel_err);
+		rm(x, &dim, x, Diffusion1, &dt, &abs_err, &rel_err);
 		if((clock() - tick) > (CLOCKS_PER_SEC/60))
 		{
 			tick = clock();
