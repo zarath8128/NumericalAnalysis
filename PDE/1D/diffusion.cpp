@@ -35,33 +35,36 @@ int main()
 
 	//3point runge-kutta 0.69986 - 0.69985
 	//5point runge-kutta 0.52489 - 0.52488
-	dt = 0.5 * ((range.max - range.min)/dim)*((range.max - range.min)/dim);
+	dt = 0.501 * ((range.max - range.min)/dim)*((range.max - range.min)/dim);
 
 	for(int i = 0; i < dim; ++i)
 		x[i] = cos(pos(i));
 
 	InitializeButcherTable();
-	SetButcherTable(GetButcherTable(RKF45));
+	SetButcherTable(GetButcherTable(Euler));
 
-	rkmethod rm = ERKMethod;
+	rkmethod rm = EulerMethod;
 	GPData gpd = CreateGPData();
 	SetWindow(&gpd, 0, 0, 640, 640);
 	SetRange(&gpd, range.min, range.max, -0.2, 1.2);
 
+			for(unsigned int i = 0; i < dim; ++i)
+				xy[2*i] = pos(i), xy[2*i + 1] = x[i];
+			Plot(&gpd, xy, dim);
 	do
 	{
-		rm(x, &dim, x, Diffusion2, &dt, &abs_err, &rel_err);
+		usleep(100);
+		rm(x, &dim, x, Diffusion1, &dt, &abs_err, &rel_err);
 		if((clock() - tick) > (CLOCKS_PER_SEC/60))
 		{
 			tick = clock();
 			for(unsigned int i = 0; i < dim; ++i)
 				xy[2*i] = pos(i), xy[2*i + 1] = x[i];
 			Plot(&gpd, xy, dim);
+			usleep(100);
 			std::cerr << "\rt = " << t;
 		}
-		if(x[dim/2] > 4)
-			break;
-	}while((t += dt ) < tmax);
+	}while((t += dt) < tmax);
 
 	std::cerr << std::endl;
 
@@ -77,6 +80,7 @@ void* Diffusion1(double *x, void *param, double* dx)
 	for(unsigned int i = 1; i < dim - 1; ++i)
 		dx[i] = (x[i - 1] - 2*x[i] + x[i + 1])*dx2inv;
 	dx[dim - 1] = (x[dim - 2] - 2*x[dim - 1])*dx2inv;
+	return 0;
 }
 
 //5-points
@@ -90,6 +94,7 @@ void* Diffusion2(double *x, void *param, double* dx)
 		dx[i] = (-x[i - 2] + 16*x[i - 1] - 30*x[i] + 16*x[i + 1] - x[i + 2])*dx2inv;
 	dx[dim - 2] = (-x[dim - 4] + 16*x[dim - 3] - 30*x[dim - 2] + 16*x[dim - 1])*dx2inv;
 	dx[dim - 1] = (-x[dim - 3] + 16*x[dim - 2] - 30*x[dim - 1])*dx2inv;
+	return 0;
 }
 
 double pos(unsigned int index)
