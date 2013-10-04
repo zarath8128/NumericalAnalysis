@@ -21,7 +21,7 @@ void *ERKMethod(double *start, void *param, double *next, vfunc f, double *h, do
 {
 	static double H;
 	uint64_t stage = bt.stage, dim = ((uint64_t*)param)[0];
-	double *buf = (double*)malloc(sizeof(double) * (stage*(1 + bt.embed) + 1)*dim);
+	double *buf = (double*)malloc(sizeof(double) * ((stage + bt.embed) + 1)*dim);
 	double *k[stage];
 	double *x1[bt.embed];
 

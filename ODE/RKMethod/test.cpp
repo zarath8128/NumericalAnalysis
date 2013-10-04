@@ -21,15 +21,15 @@ int main()
 {
 	InitializeButcherTable();
 
-	//SetButcherTable(GetButcherTable(RKF45));
-	SetButcherTable(GetButcherTable(Euler));
+	SetButcherTable(GetButcherTable(RKF45));
+	//SetButcherTable(GetButcherTable(RungeKutta));
 
 	rkmethod proc = ERKMethod;//EulerMethodAuto;
 	int64_t dim = 30;
 	double x1[dim], x2[dim];
 	double *x = x1, *y = x2, *temp;
-	double a_err = 1, r_err = 0;
-	double h = 0.01, t = 0;
+	double a_err = 0, r_err = 1e-12;
+	double h = 0.001, t = 0;
 	uint64_t count = 0;
 
 	for(int i = 0; i < dim; ++i)
