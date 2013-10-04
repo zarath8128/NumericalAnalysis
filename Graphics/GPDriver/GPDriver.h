@@ -20,23 +20,29 @@ namespace zarath
 			typedef struct tag_GPData
 			{
 				FILE *gp;
-				double xmin, xmax, ymin, ymax;
+				FILE *tp3d;
+				char tpf[32];
+				double min[3], max[3];
 				int x, y, width, height;
 				int flags;
 			}GPData;
 
 			enum GPFlags
 			{
-				withLine = 0x01,
-				withPoint = 0x02,
+				ploted = 0x01,
+				withLine = 0x02,
+				withPoint = 0x04,
 			};
 
 			GPData CreateGPData();
 			void SetWindow(GPData *gpd, int x, int y, int width, int height);
-			void SetRange(GPData *gpd, double xmin, double xmax, double ymin, double ymax);
+			void SetRange(GPData *gpd, double min, double max, unsigned int dim);
+			void SetFlags(GPData *gpd, int flags);
+			void ClearFlags(GPData *gpd, int flags);
 			void InitializeGP(GPData *gpd);
 			void Plot(GPData *gpd, double *data, unsigned int len);
-			vois SPlot(GPData *gpd, double *data, unsigned int xlen, unsigned int ylen);
+			void rePlot(GPData *gpd, double *data, unsigned int len);
+			void SPlot(GPData *gpd, double *data, unsigned int xlen, unsigned int ylen);
 			void DeleteGPData(GPData *gpd);
 
 #ifdef __cplusplus

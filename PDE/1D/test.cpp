@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <unistd.h>
-#include "GPDriver.h"
+#include "Graphics/GPDriver/GPDriver.h"
 
 using namespace zarath;
 using namespace GPDriver;
@@ -22,7 +22,8 @@ int main()
 	for(int i = 0; i < dim; ++i)
 		d[2*i] = M_PI*(-1 + i/(double)(dim/2)), d[i*2 + 1] = 0.5*cos(d[2*i]) + 0.5;
 	GPData gpd = CreateGPData();
-	SetRange(&gpd, -M_PI, M_PI, 0, 1);
+	SetRange(&gpd, -M_PI, M_PI, 0);
+	SetRange(&gpd, 0, 1, 1);
 	InitializeGP(&gpd);
 	while(t < 10)
 	{

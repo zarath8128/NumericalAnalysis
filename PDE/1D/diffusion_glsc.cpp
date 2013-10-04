@@ -1,16 +1,15 @@
 #include "ODE/RKMethod/ERKMethod.h"
 #include "ODE/RKMethod/EulerMethod.h"
 #include "ODE/RKMethod/ButcherTable.h"
-#include "Graphics/GPDriver/GPDriver.h"
 #include <cmath>
 #include <stdint.h>
 #include <ctime>
 #include <iostream>
 #include <cstdio>
 #include <unistd.h>
+#include <glsc.h>
 
 using namespace zarath;
-using namespace GPDriver;
 
 void* Wave1(double *x, void *param, double *dx);
 void* Wave11(double *x, void *param, double *dx);
@@ -23,12 +22,14 @@ double pos(unsigned int index);
 
 void *PCMethod(double *x, void *param, double *next_x, vfunc f, double *dt, double *abs_err, double *rel_err)
 {
+	double *DT;
 	uint64_t dim = *(uint64_t*)param;
 	double buf[dim], buf2[dim];
-	ERKMethod(x, param, buf, f, dt, abs_err, rel_err);
+	DT = (double*)ERKMethod(x, param, buf, f, dt, abs_err, rel_err);
 	f(buf, param, buf2);
 	for(int i = 0; i < dim; ++i)
 		next_x[i] = x[i] + buf2[i]* *dt;
+	return DT;
 }
 
 struct
@@ -50,12 +51,13 @@ double integ(double* x, int len)
 
 int main()
 {
-	clock_t tick = clock();
-	uint64_t dim = 50, w = 2000, c = 0, n = 1;
+	double margin = 0.1;
+	uint64_t dim = 500, w = 2000, c = 0, n = 1;
 	double t = 0, dt = 0, tmax = 20;
-	double abs_err = 0, rel_err = 1e-0;
+	double abs_err = 0, rel_err = 1e-15;
 	double xy[2*dim];
 	double x[dim];
+	double ue[dim];
 
 	range.min = -M_PI/2;
 	range.max = M_PI/2;
@@ -70,44 +72,53 @@ int main()
 		x[i] = cos(pos(i));
 
 	InitializeButcherTable();
-	SetButcherTable(GetButcherTable(Euler));
+	SetButcherTable(GetButcherTable(RKF45));
 
-	rkmethod rm = EulerMethod;
-	GPData gpd = CreateGPData();
-	SetWindow(&gpd, 0, 0, 640, 640);
-	SetRange(&gpd, range.min, range.max, 0);
-	SetRange(&gpd, -2, 2, 1);
-	SetFlags(&gpd, withLine);
-/*			for(unsigned int i = 0; i < dim; ++i)
-				xy[2*i] = pos(i), xy[2*i + 1] = x[i];
-			Plot(&gpd, xy, dim);
-			double err[dim];
-			for(int i = 0; i < range.point_num; ++i)
-				err[i] = fabs(x[i] - u_exact(t, pos(i)));
-			std::cout << integ(err, range.point_num) << " " << t << std::endl;
-	t = 0.1;
-*/	do
+	rkmethod rm = ERKMethod;
+
+	g_init("plot", 200, 200);
+	g_device(G_DISP);
+
+	g_def_scale(0, range.min - margin, range.max + margin, 0 - margin, 1 + margin, 0, 0, 200, 200);
+
+	g_sel_scale(0);
+	do
 	{
-		if(c++ % w == 0){
-			t += *(double*)rm(x, &dim, x, Diffusion1, &dt, &abs_err, &rel_err);
-		  dt = DT;}
-		if(abs(clock() - tick)/(double)CLOCKS_PER_SEC > (1./60))
-		{
-			tick = clock();
-			for(unsigned int i = 0; i < dim; ++i)
-				xy[2*i] = pos(i), xy[2*i + 1] = x[i];
-			Plot(&gpd, xy, dim);
-			double err[dim];
-			for(int i = 0; i < range.point_num; ++i)
-				err[i] = fabs(x[i] - u_exact(t, pos(i)));
-			std::cout << std::scientific << integ(err, range.point_num) << " " << t << std::endl;
-			//printf("%g %g¥n", integ(err, range.point_num), t);
-		}
+		g_sleep(1./60);
+		g_cls();
+
+		g_line_color(G_BLACK);
+		g_move(range.min, 0);
+		g_plot(range.max, 0);
+
+		g_move(0, range.min);
+		g_plot(0, range.max);
+
+		t += *(double*)rm(x, &dim, x, Diffusion1, &dt, &abs_err, &rel_err);
+	 	//dt = DT;
+
+		g_line_color(G_GREEN);
+		g_move(pos(0), x[0]);
+		for(int i = 0; i < dim; ++i)
+			g_plot(pos(i), x[i]);
+		
+		double err[dim];
+		for(int i = 0; i < range.point_num; ++i)
+			err[i] = fabs(x[i] - u_exact(t , pos(i)));
+
+		g_line_color(G_BLUE);
+		g_move(pos(0), u_exact(t, pos(0)));
+		for(int i = 0; i < dim; ++i)
+			g_plot(pos(i), u_exact(t, pos(i)));
+
+
+		std::cout << std::scientific << integ(err, range.point_num) << " " << t << std::endl;
+		std::cerr << "\r" << "r_err = " << std::scientific << integ(err, range.point_num) << " t = " << t;
 	}while(t > 0);
-	DeleteGPData(&gpd);
+
+	g_term();
 
 	FinalizeButcherTable();
-	std::cout << t << std::endl;
 }
 
 void* Wave1(double *x, void *param, double *dx)
@@ -118,6 +129,7 @@ void* Wave1(double *x, void *param, double *dx)
 	for(unsigned int i = 1; i < dim - 1; ++i)
 		dx[i] = (x[i - 1] - x[i + 1])*dx2inv;
 	dx[dim - 1] = (x[dim - 2])*dx2inv;
+	return 0;
 }
 
 void* Wave11(double *x, void *param, double *dx)
@@ -128,6 +140,7 @@ void* Wave11(double *x, void *param, double *dx)
 	for(unsigned int i = 1; i < dim - 1; ++i)
 		dx[i] = (x[i - 1] - x[i + 1])*dx2inv;
 	dx[dim - 1] = (x[dim - 2] - x[1])*dx2inv;
+	return 0;
 }
 
 void* Wave21(double *x, void *param, double *dx)
@@ -138,6 +151,7 @@ void* Wave21(double *x, void *param, double *dx)
 	for(unsigned int i = 1; i < dim - 1; ++i)
 		dx[i] = (x[i - 1] - x[i + 1])*dx2inv;
 	dx[dim - 1] = (x[dim - 2] - x[dim - 2])*dx2inv;
+	return 0;
 }
 
 //3-points
@@ -145,10 +159,10 @@ void* Diffusion1(double *x, void *param, double* dx)
 {
 	uint64_t dim = *((uint64_t*)param);
 	double dx2inv = 1/((pos(1) - pos(0))*(pos(1) - pos(0)));
-	dx[0] = (-2*x[0] + x[1])*dx2inv;
+	dx[0] = (-3*x[0] + x[1])*dx2inv;
 	for(unsigned int i = 1; i < dim - 1; ++i)
 		dx[i] = (x[i - 1] - 2*x[i] + x[i + 1])*dx2inv;
-	dx[dim - 1] = (x[dim - 2] - 2*x[dim - 1])*dx2inv;
+	dx[dim - 1] = (x[dim - 2] - 3*x[dim - 1])*dx2inv;
 	return 0;
 }
 
@@ -161,6 +175,7 @@ void* Diffusion11(double *x, void *param, double* dx)
 	for(unsigned int i = 1; i < dim - 1; ++i)
 		dx[i] = (x[i - 1] - 2*x[i] + x[i + 1])*dx2inv;
 	dx[dim - 1] = (x[dim - 2] - 2*x[dim - 1] + x[0])*dx2inv;
+	return 0;
 }
 
 //3-points
@@ -172,6 +187,7 @@ void* Diffusion21(double *x, void *param, double* dx)
 	for(unsigned int i = 1; i < dim - 1; ++i)
 		dx[i] = (x[i - 1] - 2*x[i] + x[i + 1])*dx2inv;
 	dx[dim - 1] = (x[dim - 2] - 2*x[dim - 1] + x[dim - 2])*dx2inv;
+	return 0;
 }
 
 //5-points

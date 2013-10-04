@@ -1,18 +1,25 @@
-#include "GPDriver.h"
+#include <time.h>
 #include <unistd.h>
+#include <math.h>
+#include "GPDriver.h"
 
 int main()
 {
 	double min = -1, max = 1;
-	int dim = 400;
-	double xy[2*dim];
+	int dim = 10;
+	double xy[2*dim], x, y;
 	for(int i = 0; i < dim; ++i)
-		xy[2*i] = i*(max - min)/(dim - 1) + min, xy[2*i + 1] = xy[2*i]*xy[2*i];
+		xy[2*i] = x = i*(max - min)/(dim - 1) + min, xy[2*i + 1] = sin(x) ;
 	GPData gpd = CreateGPData();
-	SetRange(&gpd, min, max, -0.2, 3);
-	InitializeGP(&gpd);
-	Plot(&gpd, xy, dim);
-	sleep(10);
+	for(int i = 0; i < 3; ++i)
+		SetRange(&gpd, min, max, i);
+	SetWindow(&gpd, 0, 0, 800, 600);
+	//InitializeGP(&gpd);
+	while(1)
+	{
+		Plot(&gpd, xy, dim);
+		sleep(1);
+	}
 	DeleteGPData(&gpd);
 	return 0;
 }
