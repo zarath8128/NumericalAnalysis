@@ -70,9 +70,9 @@ int main()
 		x[i] = cos(pos(i));
 
 	InitializeButcherTable();
-	SetButcherTable(GetButcherTable(RKF45));
+	SetButcherTable(GetButcherTable(Euler));
 
-	rkmethod rm = ERKMethod;
+	rkmethod rm = EulerMethod;
 	GPData gpd = CreateGPData();
 	SetWindow(&gpd, 0, 0, 640, 640);
 	SetRange(&gpd, range.min, range.max, 0);
@@ -149,6 +149,7 @@ void* Diffusion1(double *x, void *param, double* dx)
 	for(unsigned int i = 1; i < dim - 1; ++i)
 		dx[i] = (x[i - 1] - 2*x[i] + x[i + 1])*dx2inv;
 	dx[dim - 1] = (x[dim - 2] - 2*x[dim - 1])*dx2inv;
+	return 0;
 }
 
 //3-points
@@ -184,6 +185,7 @@ void* Diffusion2(double *x, void *param, double* dx)
 		dx[i] = (-x[i - 2] + 16*x[i - 1] - 30*x[i] + 16*x[i + 1] - x[i + 2])*dx2inv;
 	dx[dim - 2] = (-x[dim - 4] + 16*x[dim - 3] - 30*x[dim - 2] + 16*x[dim - 1])*dx2inv;
 	dx[dim - 1] = (-x[dim - 3] + 16*x[dim - 2] - 30*x[dim - 1])*dx2inv;
+	return 0;
 }
 
 double pos(unsigned int index)
