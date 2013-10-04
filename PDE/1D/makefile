@@ -1,7 +1,7 @@
 CXXFLAGS=-std=c++0x ${INCLUDEPATH} -O3
 CFLAGS=-std=c99 ${INCLUDEPATH}
 
-INCLUDEPATH=-I${HOME}/NumericalAnalysis
+INCLUDEPATH=-I${HOME}/NumericalAnalysis -L/opt/X11/lib -I/opt/X11/include
 LIBRARY=${HOME}/NumericalAnalysis/ODE/RKMethod/libRKMethod.a ${HOME}/NumericalAnalysis/Graphics/GPDriver/libGPDriver.a -lglsc -lX11
 
 all:test diffusion diffusion_glsc

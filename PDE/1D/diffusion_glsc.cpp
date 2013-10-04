@@ -49,9 +49,9 @@ double integ(double* x, int len)
 
 int main()
 {
-	uint64_t dim = 50, w = 2000, c = 0, n = 1;
+	uint64_t dim = 200, w = 2000, c = 0, n = 1;
 	double t = 0, dt = 0, tmax = 20;
-	double abs_err = 0, rel_err = 1e-0;
+	double abs_err = 1e-15, rel_err = abs_err;
 	double xy[2*dim];
 	double x[dim];
 	double ue[dim];
@@ -110,7 +110,7 @@ int main()
 
 
 		std::cout << std::scientific << integ(err, range.point_num) << " " << t << std::endl;
-		std::cerr << "\r" << "r_err = " << std::scientific << integ(err, range.point_num)/integ(ue, dim) << " t = " << t;
+		std::cerr << "\r" << "a_err = " << std::scientific << integ(err, range.point_num) << " t = " << t;
 	}while(t > 0);
 
 	g_term();
