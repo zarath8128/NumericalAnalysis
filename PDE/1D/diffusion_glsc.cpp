@@ -54,10 +54,12 @@ int main()
 	double margin = 0.1;
 	uint64_t dim = 128, w = 2000, c = 0, n = 1;
 	double t = 0, dt = 0, tmax = 20;
-	double abs_err = 1e-1, rel_err = abs_err;
+	double abs_err = 1e-0, rel_err = abs_err;
 	double next[dim];
 	double x[dim];
 	double ue[dim];
+	double sym_err = 0, x_sym_err;
+	double *tdt;
 
 	range.min = -0.5;
 	range.max = 0.5;
@@ -66,17 +68,17 @@ int main()
 
 	//3point runge-kutta 0.69983 - 0.69984 time:20
 	//5point runge-kutta 0.52487 - 0.52488 time:20
-	double DT = dt = 0.501 * ((range.max - range.min)/dim)*((range.max - range.min)/dim);
+	double DT = dt = 0.524 * ((range.max - range.min)/dim)*((range.max - range.min)/dim);
 
 	for(int i = 0; i < dim; ++i)
 		x[i] = cos(M_PI*pos(i));
 
 	InitializeButcherTable();
-	SetButcherTable(GetButcherTable(Euler));
+	SetButcherTable(GetButcherTable(RungeKutta));
 
 	rkmethod rm = ERKMethod;//EulerMethodAuto;//ERKMethod;
 
-	g_init("plot", 200, 200);
+	g_init("plot", 200, 150);
 	g_device(G_DISP);
 
 	g_def_scale(0, range.min - margin, range.max + margin, -1 - margin, 1 + margin, 0, 0, 200, 200);
@@ -84,8 +86,8 @@ int main()
 	g_sel_scale(0);
 	do
 	{
-		g_sleep(1./60);
-	//	g_sleep(G_STOP);
+		g_sleep(1./6);
+		//g_sleep(G_STOP);
 		g_cls();
 
 		g_line_color(G_BLACK);
@@ -95,7 +97,15 @@ int main()
 		g_move(0, range.min);
 		g_plot(0, range.max);
 
-		t += *(double*)rm(x, &dim, next, Diffusion1, &dt, &abs_err, &rel_err);
+		x_sym_err = sym_err = 0;
+		Diffusion1(x, &dim, next);
+		for(int i = 0; i < dim; ++i)
+			sym_err += fabs(next[i] - next[dim - 1 - i]), x_sym_err += fabs(x[i] - x[dim - 1 - i]);
+		sym_err *= 0.5;
+		x_sym_err *= 0.5;
+
+		tdt = (double*)rm(x, &dim, next, Diffusion2, &dt, &abs_err, &rel_err);
+		t += ((tdt)?(*tdt):(dt));
 		for(int i = 0; i < dim; ++i)
 			x[i] = next[i];
 	 	//dt = DT;
@@ -125,7 +135,8 @@ int main()
 			g_plot(pos(i), err[i]);
 
 		//std::cout << std::scientific << integ(err, range.point_num) << " " << t << std::endl;
-		std::cerr << "\r" << "a_err = " << std::scientific << err_integ << " t = " << t;
+		std::cerr << "\r" << "a_err = " << std::scientific << err_integ << " t = " << t << " sym_err = " << sym_err
+			<< " x_sym_err = " << x_sym_err;
 	}while(t > 0);
 
 	g_term();
@@ -171,12 +182,9 @@ void* Diffusion1(double *x, void *param, double* dx)
 {
 	uint64_t dim = *((uint64_t*)param);
 	double dx2inv = 1/((pos(1) - pos(0))*(pos(1) - pos(0)));
-	double x0 = x[0];
 	dx[0] = (-3*x[0] + x[1])*dx2inv;
-	if(x[0] != x0)
-		std::cout << "hit" << std::endl;
 	for(unsigned int i = 1; i < dim - 1; ++i)
-		dx[i] = (x[i - 1] - 2*x[i] + x[i + 1])*dx2inv;
+		dx[i] = (x[i - 1] + x[i + 1] - 2*x[i])*dx2inv;
 	dx[dim - 1] = (x[dim - 2] - 3*x[dim - 1])*dx2inv;
 	return 0;
 }
@@ -210,12 +218,12 @@ void* Diffusion2(double *x, void *param, double* dx)
 {
 	uint64_t dim = *((uint64_t*)param);
 	double dx2inv = 1/(12*(pos(1) - pos(0))*(pos(1) - pos(0)));
-	dx[0] = (-30*x[0] + 16*x[1] - x[2])*dx2inv;
-	dx[1] = (16*x[0] - 30*x[1] + 16*x[2] - x[3])*dx2inv;
+	dx[0] = ((-46*x[0] - x[2]) + 17*x[1])*dx2inv;
+	dx[1] = (17*x[0] + 16*x[2] + (- 30*x[1] - x[3]))*dx2inv;
 	for(unsigned int i = 2; i < dim - 2; ++i)
-		dx[i] = (-x[i - 2] + 16*x[i - 1] - 30*x[i] + 16*x[i + 1] - x[i + 2])*dx2inv;
-	dx[dim - 2] = (-x[dim - 4] + 16*x[dim - 3] - 30*x[dim - 2] + 16*x[dim - 1])*dx2inv;
-	dx[dim - 1] = (-x[dim - 3] + 16*x[dim - 2] - 30*x[dim - 1])*dx2inv;
+		dx[i] = ((-x[i - 2] - x[i + 2] - 30*x[i]) + (16*x[i - 1] + 16*x[i + 1]))*dx2inv;
+	dx[dim - 2] = ((-x[dim - 4] - 30*x[dim - 2]) + (17*x[dim - 1] + 16*x[dim - 3]))*dx2inv;
+	dx[dim - 1] = ((-x[dim - 3] - 46*x[dim - 1]) + 17*x[dim - 2])*dx2inv;
 	return 0;
 }
 
