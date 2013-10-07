@@ -29,6 +29,7 @@ void *PCMethod(double *x, void *param, double *next_x, vfunc f, double *dt, doub
 	f(buf, param, buf2);
 	for(int i = 0; i < dim; ++i)
 		next_x[i] = x[i] + buf2[i]* *dt;
+	return 0;
 }
 
 struct
@@ -118,6 +119,7 @@ void* Wave1(double *x, void *param, double *dx)
 	for(unsigned int i = 1; i < dim - 1; ++i)
 		dx[i] = (x[i - 1] - x[i + 1])*dx2inv;
 	dx[dim - 1] = (x[dim - 2])*dx2inv;
+	return 0;
 }
 
 void* Wave11(double *x, void *param, double *dx)
@@ -128,6 +130,7 @@ void* Wave11(double *x, void *param, double *dx)
 	for(unsigned int i = 1; i < dim - 1; ++i)
 		dx[i] = (x[i - 1] - x[i + 1])*dx2inv;
 	dx[dim - 1] = (x[dim - 2] - x[1])*dx2inv;
+	return 0;
 }
 
 void* Wave21(double *x, void *param, double *dx)
@@ -138,6 +141,7 @@ void* Wave21(double *x, void *param, double *dx)
 	for(unsigned int i = 1; i < dim - 1; ++i)
 		dx[i] = (x[i - 1] - x[i + 1])*dx2inv;
 	dx[dim - 1] = (x[dim - 2] - x[dim - 2])*dx2inv;
+	return 0;
 }
 
 //3-points
@@ -161,6 +165,7 @@ void* Diffusion11(double *x, void *param, double* dx)
 	for(unsigned int i = 1; i < dim - 1; ++i)
 		dx[i] = (x[i - 1] - 2*x[i] + x[i + 1])*dx2inv;
 	dx[dim - 1] = (x[dim - 2] - 2*x[dim - 1] + x[0])*dx2inv;
+	return 0;
 }
 
 //3-points
@@ -172,6 +177,7 @@ void* Diffusion21(double *x, void *param, double* dx)
 	for(unsigned int i = 1; i < dim - 1; ++i)
 		dx[i] = (x[i - 1] - 2*x[i] + x[i + 1])*dx2inv;
 	dx[dim - 1] = (x[dim - 2] - 2*x[dim - 1] + x[dim - 2])*dx2inv;
+	return 0;
 }
 
 //5-points

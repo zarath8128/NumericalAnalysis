@@ -52,12 +52,10 @@ double integ(double* x, int len)
 int main()
 {
 	double margin = 0.1;
-	uint64_t dim = 128, w = 2000, c = 0, n = 1;
-	double t = 0, dt = 0, tmax = 20;
+	uint64_t dim = 64, w = 2000, c = 0, n = 1;
+	double t = 0, dt = 0, tmax = 20, *dtd;
 	double abs_err = 1e-1, rel_err = abs_err;
-	double next[dim];
-	double x[dim];
-	double ue[dim];
+	double x[dim], next[dim];
 
 	range.min = -0.5;
 	range.max = 0.5;
@@ -66,15 +64,20 @@ int main()
 
 	//3point runge-kutta 0.69983 - 0.69984 time:20
 	//5point runge-kutta 0.52487 - 0.52488 time:20
-	double DT = dt = 0.501 * ((range.max - range.min)/dim)*((range.max - range.min)/dim);
+	double DT = dt = 0.701 * ((range.max - range.min)/dim)*((range.max - range.min)/dim);
 
 	for(int i = 0; i < dim; ++i)
 		x[i] = cos(M_PI*pos(i));
 
-	InitializeButcherTable();
-	SetButcherTable(GetButcherTable(Euler));
+//	for(int i = 0; i < dim; ++i)
+//		std::cout << x[i] - x[dim - 1 - i] << std::endl;
 
-	rkmethod rm = ERKMethod;//EulerMethodAuto;//ERKMethod;
+//	exit(0);
+
+	InitializeButcherTable();
+	SetButcherTable(GetButcherTable(RungeKutta));
+
+	rkmethod rm = ERKMethod;
 
 	g_init("plot", 200, 200);
 	g_device(G_DISP);
@@ -94,10 +97,10 @@ int main()
 
 		g_move(0, range.min);
 		g_plot(0, range.max);
-
-		t += *(double*)rm(x, &dim, next, Diffusion1, &dt, &abs_err, &rel_err);
+		dtd = (double*)rm(x, &dim, next, Diffusion1, &dt, &abs_err, &rel_err);
 		for(int i = 0; i < dim; ++i)
 			x[i] = next[i];
+		std::cout << (t += ((!dtd)?(*dtd):(DT)));
 	 	//dt = DT;
 
 		g_line_color(G_GREEN);
@@ -171,12 +174,14 @@ void* Diffusion1(double *x, void *param, double* dx)
 {
 	uint64_t dim = *((uint64_t*)param);
 	double dx2inv = 1/((pos(1) - pos(0))*(pos(1) - pos(0)));
-	double x0 = x[0];
 	dx[0] = (-3*x[0] + x[1])*dx2inv;
-	if(x[0] != x0)
-		std::cout << "hit" << std::endl;
 	for(unsigned int i = 1; i < dim - 1; ++i)
+	{
+		double xi = x[i];
 		dx[i] = (x[i - 1] - 2*x[i] + x[i + 1])*dx2inv;
+		if(xi != x[i])
+			std::cout << "check" << std::endl;
+	}
 	dx[dim - 1] = (x[dim - 2] - 3*x[dim - 1])*dx2inv;
 	return 0;
 }
