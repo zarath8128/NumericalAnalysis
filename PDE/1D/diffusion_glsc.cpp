@@ -101,16 +101,17 @@ int main()
 			x[i] = next[i];
 	 	//dt = DT;
 
-		for(unsigned int i = 0; i < dim/2; ++i)
-			next[i] = (x[i] + x[i + 1])/2;
-		for(unsigned int i = dim/2; i < dim; ++i)
-			next[i] = (x[i - 1] + x[i])/2;
-		
+		//for(unsigned int i = 0; i < dim/2; ++i)
+		//	next[i] = (x[i] + x[i + 1])/2;
+		//for(unsigned int i = dim/2; i < dim; ++i)
+		//	next[i] = (x[i - 1] + x[i])/2;
+		for(int i = 0; i < dim; ++i)
+			x[i] = next[i];	
 
 		g_line_color(G_GREEN);
 		g_move(pos(0), x[0]);
 		for(unsigned int i = 0; i < dim; ++i)
-			g_plot(pos(i), next[i]);		
+			g_plot(pos(i), x[i]);		
 
 		double err[dim];
 		for(unsigned int i = 0; i < range.point_num; ++i)
@@ -134,7 +135,6 @@ int main()
 		//std::cout << std::scientific << integ(err, range.point_num) << " " << t << std::endl;
 		std::cerr << "\r" << "a_err = " << std::scientific << err_integ << " t = " << t << " sym_err = " << sym_err
 			<< " x_sym_err = " << x_sym_err;
-		printf("d12345 = %15.15f", d12345);
 	}while(t > 0);
 
 	g_term();

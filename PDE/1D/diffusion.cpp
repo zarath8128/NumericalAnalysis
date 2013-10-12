@@ -7,6 +7,7 @@
 #include <ctime>
 #include <iostream>
 #include <cstdio>
+#include <cstdlib>
 #include <unistd.h>
 
 using namespace zarath;
