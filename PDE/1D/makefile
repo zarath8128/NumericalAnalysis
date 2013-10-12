@@ -1,4 +1,4 @@
-CXXFLAGS=${INCLUDEPATH} -O3 -W -Wall
+CXXFLAGS=${INCLUDEPATH} -W -Wall -fp-model precise -xHOST
 CFLAGS=-std=c99 ${INCLUDEPATH}
 
 INCLUDEPATH=-I${HOME}/NumericalAnalysis -L/opt/X11/lib -I/opt/X11/include

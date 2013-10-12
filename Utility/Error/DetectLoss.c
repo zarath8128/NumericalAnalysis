@@ -33,11 +33,18 @@ int DetectLoss(double x)
 
 int DetectSignificantLoss(double a, double b)
 {
-	double l = ((a < b)?(b):(a)), s = ((a < b)?(a):(b));
-	DoubleBit L = CreateDoubleBit(l), S = CreateDoubleBit(s);
-	int diff = L.exp - S.exp;
-	uint64_t lsig = L.sig | (1L << 52), ssig = (S.sig | (1L << 52)) >> diff;
+	DoubleBit A = CreateDoubleBit(a), B = CreateDoubleBit(b);
+	uint64_t lsig, ssig, asig, bsig;
+	if(A.exp == B.exp)
+		asig = (A.sig | (1L << 52)), bsig = (B.sig | (1L << 52));
+	else if(A.exp > B.exp)
+		asig = (A.sig | (1L << 52)), bsig = ((B.sig | (1L << 52) >> (A.exp - B.exp)));
+	else
+		bsig = (B.sig | (1L << 52)), asig = ((A.sig | (1L << 52) >> (B.exp - A.exp)));
+		
 	int i = 53;
+	lsig = ((asig > bsig)?(asig):(bsig));
+	ssig = ((asig > bsig)?(bsig):(asig));
 	uint64_t sig = lsig - ssig;
 	if(!sig)
 		return 0;

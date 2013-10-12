@@ -1,4 +1,4 @@
-
+CFLAGS=-std=c99
 ALL=test libCPU.a 
 
 all:${ALL}

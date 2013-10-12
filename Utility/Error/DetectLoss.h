@@ -3,25 +3,32 @@
 
 #include <stdint.h>
 
-typedef struct tag_doublebit
+#ifdef __cplusplus
+extern "C"
 {
-	double d;
-	uint64_t sig;//significant
-	char significant[53];
-	char exponential[12];
-	char sign[2];
-	uint16_t exp;
-	uint8_t sn;
-}DoubleBit;
+#endif
 
-typedef union tag_bitdouble
-{
-	double d;
-	uint64_t b;
-}bitdouble;
+	typedef struct tag_doublebit
+	{
+		double d;
+		uint64_t sig;//significant
+		char significant[53];
+		char exponential[12];
+		char sign[2];
+		uint16_t exp;
+		uint8_t sn;
+	}DoubleBit;
 
-DoubleBit CreateDoubleBit(double d);
-int DetectLoss(double x);
-int DetectSignificantLoss(double a, double b);
+	typedef union tag_bitdouble
+	{
+		double d;
+		uint64_t b;
+	}bitdouble;
 
+	DoubleBit CreateDoubleBit(double d);
+	int DetectLoss(double x);
+	int DetectSignificantLoss(double a, double b);
+#ifdef __cplusplus
+}
+#endif
 #endif

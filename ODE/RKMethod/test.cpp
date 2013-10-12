@@ -21,8 +21,8 @@ int main()
 {
 	InitializeButcherTable();
 
-	SetButcherTable(GetButcherTable(RKF45));
-	//SetButcherTable(GetButcherTable(RungeKutta));
+	//SetButcherTable(GetButcherTable(RKF45));
+	SetButcherTable(GetButcherTable(RungeKutta));
 
 	rkmethod proc = ERKMethod;//EulerMethodAuto;
 	int64_t dim = 30;

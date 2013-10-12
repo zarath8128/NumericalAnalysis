@@ -39,7 +39,7 @@ double integ(double* x, int len)
 int main()
 {
 	double margin = 0.1;
-	uint64_t dim = 128;
+	uint64_t dim = 64;
 	double t = 0, dt = 0;
 	double abs_err = 1e-1, rel_err = abs_err;
 	double next[dim];
@@ -78,7 +78,7 @@ int main()
 	do
 	{
 		g_sleep(0.1);
-		//g_sleep(G_STOP);
+		g_sleep(G_STOP);
 		g_cls();
 
 		g_line_color(G_BLACK);
@@ -150,16 +150,31 @@ void* Diffusion1(double *x, void *param, double* dx)
 	dx[0] = (-3*x[0] + x[1])*dx2inv;
 	for(unsigned int i = 1; i < dim - 1; ++i)
 	{
-		double a = x[i- 1], b = x[i], c = x[i + 1];	
+		double a = x[i- 1], b = x[i], c = x[i + 1];
+		if(DetectSignificantLoss(a, 2*b) + DetectSignificantLoss((a - 2*b), -c) != DetectSignificantLoss(c, 2*b) + DetectSignificantLoss((c - 2*b), -a))
+		{
+			std::cout << "index : " << i << "\n";
+			std::cout << a << " - " << 2*b << " lose " << DetectSignificantLoss(a, 2*b) << " significants\n";
+			std::cout << a - 2*b << " + " << c << " lose " << DetectSignificantLoss(a - 2*b, c) << " significants\n";
+			std::cout << c << " - " << 2*b << " lose " << DetectSignificantLoss(c, 2*b) << " significants\n";
+			std::cout << c - 2*b << " + " << a << " lose " << DetectSignificantLoss(c - 2*b, a) << " significants\n";
+		}
+		if(a - 2*b + c != c - 2*b + a)
+		{
+			std::cout << "Index : " << i << "\n";
+			std::cout << "a - 2*b + c = " << std::setprecision(15) << a - 2*b + c << "\n";
+			std::cout << "c - 2*b + a = " << std::setprecision(15) << c - 2*b + a << "\n";
+		}
 		//dx[i] = (a + c - 2*b)*dx2inv;
-		dx[i] = ((c - b) + (a - b))*dx2inv;
+		//dx[i] = ((c - b) + (a - b))*dx2inv;
 		//dx[i] = (-2*x[i] + x[i - 1] + x[i + 1])*dx2inv;
-		//dx[i] = (x[i - 1] - 2*x[i] + x[i + 1])*dx2inv;
+		dx[i] = (x[i - 1] - 2*x[i] + x[i + 1])*dx2inv;
 		//dx[i] = (x[i - 1] +(- 2*x[i] + x[i + 1]))*dx2inv;
 		//dx[i] = 0.5*((a - 2*b + c) + (c - 2*b + a))*dx2inv;
 		//d12345 = (i == 30)?(d12345):(dx[i]);
 	}
 	dx[dim - 1] = (x[dim - 2] - 3*x[dim - 1])*dx2inv;
+	std::cout << "-----------------------------------------------\n";
 	return 0;
 }
 
