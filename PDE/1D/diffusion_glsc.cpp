@@ -5,32 +5,18 @@
 #include <stdint.h>
 #include <ctime>
 #include <iostream>
+#include <iomanip>
 #include <cstdio>
 #include <unistd.h>
 #include <glsc.h>
 
 using namespace zarath;
 
-void* Wave1(double *x, void *param, double *dx);
-void* Wave11(double *x, void *param, double *dx);
-void* Wave21(double *x, void *param, double *dx);
 void* Diffusion1(double *x, void *param, double* dx);
-void* Diffusion11(double *x, void *param, double* dx);
-void* Diffusion21(double *x, void *param, double* dx);
 void* Diffusion2(double *x, void *param, double* dx);
 double pos(unsigned int index);
 
-void *PCMethod(double *x, void *param, double *next_x, vfunc f, double *dt, double *abs_err, double *rel_err)
-{
-	double *DT;
-	uint64_t dim = *(uint64_t*)param;
-	double buf[dim], buf2[dim];
-	DT = (double*)ERKMethod(x, param, buf, f, dt, abs_err, rel_err);
-	f(buf, param, buf2);
-	for(int i = 0; i < dim; ++i)
-		next_x[i] = x[i] + buf2[i]* *dt;
-	return DT;
-}
+double d12345;
 
 struct
 {
@@ -52,12 +38,11 @@ double integ(double* x, int len)
 int main()
 {
 	double margin = 0.1;
-	uint64_t dim = 128, w = 2000, c = 0, n = 1;
-	double t = 0, dt = 0, tmax = 20;
-	double abs_err = 1e-0, rel_err = abs_err;
+	uint64_t dim = 128;
+	double t = 0, dt = 0;
+	double abs_err = 1e-1, rel_err = abs_err;
 	double next[dim];
 	double x[dim];
-	double ue[dim];
 	double sym_err = 0, x_sym_err;
 	double *tdt;
 
@@ -68,25 +53,25 @@ int main()
 
 	//3point runge-kutta 0.69983 - 0.69984 time:20
 	//5point runge-kutta 0.52487 - 0.52488 time:20
-	double DT = dt = 0.524 * ((range.max - range.min)/dim)*((range.max - range.min)/dim);
+	double DT = dt = 0.75 * ((range.max - range.min)/dim)*((range.max - range.min)/dim);
 
-	for(int i = 0; i < dim; ++i)
+	for(unsigned int i = 0; i < dim; ++i)
 		x[i] = cos(M_PI*pos(i));
 
 	InitializeButcherTable();
-	SetButcherTable(GetButcherTable(RungeKutta));
+	SetButcherTable(GetButcherTable(RKF45));
 
 	rkmethod rm = ERKMethod;//EulerMethodAuto;//ERKMethod;
 
-	g_init("plot", 200, 150);
+	g_init("plot", 150, 100);
 	g_device(G_DISP);
 
-	g_def_scale(0, range.min - margin, range.max + margin, -1 - margin, 1 + margin, 0, 0, 200, 200);
+	g_def_scale(0, range.min - margin, range.max + margin, -1 - margin, 1 + margin, 0, 0, 150, 100);
 
 	g_sel_scale(0);
 	do
 	{
-		g_sleep(1./6);
+		g_sleep(0.1);
 		//g_sleep(G_STOP);
 		g_cls();
 
@@ -99,44 +84,51 @@ int main()
 
 		x_sym_err = sym_err = 0;
 		Diffusion1(x, &dim, next);
-		for(int i = 0; i < dim; ++i)
+		for(unsigned int i = 0; i < dim; ++i)
 			sym_err += fabs(next[i] - next[dim - 1 - i]), x_sym_err += fabs(x[i] - x[dim - 1 - i]);
 		sym_err *= 0.5;
 		x_sym_err *= 0.5;
 
-		tdt = (double*)rm(x, &dim, next, Diffusion2, &dt, &abs_err, &rel_err);
+		tdt = (double*)rm(x, &dim, next, Diffusion1, &dt, &abs_err, &rel_err);
 		t += ((tdt)?(*tdt):(dt));
-		for(int i = 0; i < dim; ++i)
+		for(unsigned int i = 0; i < dim; ++i)
 			x[i] = next[i];
 	 	//dt = DT;
 
+		for(unsigned int i = 0; i < dim/2; ++i)
+			next[i] = (x[i] + x[i + 1])/2;
+		for(unsigned int i = dim/2; i < dim; ++i)
+			next[i] = (x[i - 1] + x[i])/2;
+		
+
 		g_line_color(G_GREEN);
 		g_move(pos(0), x[0]);
-		for(int i = 0; i < dim; ++i)
-			g_plot(pos(i), x[i]);
-		
+		for(unsigned int i = 0; i < dim; ++i)
+			g_plot(pos(i), next[i]);		
+
 		double err[dim];
-		for(int i = 0; i < range.point_num; ++i)
+		for(unsigned int i = 0; i < range.point_num; ++i)
 			err[i] = fabs(x[i] - u_exact(t , pos(i)));
 
 		double err_integ = integ(err, dim);
 
 		g_line_color(G_BLUE);
 		g_move(pos(0), u_exact(t, pos(0)));
-		for(int i = 0; i < dim; ++i)
+		for(unsigned int i = 0; i < dim; ++i)
 			g_plot(pos(i), u_exact(t, pos(i)));
 
-		for(int i = 0; i < range.point_num; ++i)
-			err[i] = (x[i] - u_exact(t , pos(i)))*10;
+		for(unsigned int i = 0; i < range.point_num; ++i)
+			err[i] = (x[i] - x[dim - 1 - i])*10;//(x[i] - u_exact(t , pos(i)))*10;
 
 		g_line_color(G_RED);
 		g_move(pos(0), err[0]);
-		for(int i = 0; i < dim; ++i)
+		for(unsigned int i = 0; i < dim; ++i)
 			g_plot(pos(i), err[i]);
 
 		//std::cout << std::scientific << integ(err, range.point_num) << " " << t << std::endl;
 		std::cerr << "\r" << "a_err = " << std::scientific << err_integ << " t = " << t << " sym_err = " << sym_err
 			<< " x_sym_err = " << x_sym_err;
+		printf("d12345 = %15.15f", d12345);
 	}while(t > 0);
 
 	g_term();
@@ -144,72 +136,24 @@ int main()
 	FinalizeButcherTable();
 }
 
-void* Wave1(double *x, void *param, double *dx)
-{
-	uint64_t dim = *((uint64_t*)param);
-	double dx2inv = 1/((pos(1) - pos(0)));
-	dx[0] = ( - x[1])*dx2inv;
-	for(unsigned int i = 1; i < dim - 1; ++i)
-		dx[i] = (x[i - 1] - x[i + 1])*dx2inv;
-	dx[dim - 1] = (x[dim - 2])*dx2inv;
-	return 0;
-}
-
-void* Wave11(double *x, void *param, double *dx)
-{
-	uint64_t dim = *((uint64_t*)param);
-	double dx2inv = 1/((pos(1) - pos(0)));
-	dx[0] = (x[dim - 1] - x[1])*dx2inv;
-	for(unsigned int i = 1; i < dim - 1; ++i)
-		dx[i] = (x[i - 1] - x[i + 1])*dx2inv;
-	dx[dim - 1] = (x[dim - 2] - x[1])*dx2inv;
-	return 0;
-}
-
-void* Wave21(double *x, void *param, double *dx)
-{
-	uint64_t dim = *((uint64_t*)param);
-	double dx2inv = 1/((pos(1) - pos(0)));
-	dx[0] = (x[1] - x[1])*dx2inv;
-	for(unsigned int i = 1; i < dim - 1; ++i)
-		dx[i] = (x[i - 1] - x[i + 1])*dx2inv;
-	dx[dim - 1] = (x[dim - 2] - x[dim - 2])*dx2inv;
-	return 0;
-}
-
 //3-points
 void* Diffusion1(double *x, void *param, double* dx)
 {
 	uint64_t dim = *((uint64_t*)param);
-	double dx2inv = 1/((pos(1) - pos(0))*(pos(1) - pos(0)));
+	double dx2inv = 1/((pos(1) - pos(0))*(pos(1) - pos(0))); 
 	dx[0] = (-3*x[0] + x[1])*dx2inv;
 	for(unsigned int i = 1; i < dim - 1; ++i)
-		dx[i] = (x[i - 1] + x[i + 1] - 2*x[i])*dx2inv;
+	{
+		double a = x[i- 1], b = x[i], c = x[i + 1];	
+		//dx[i] = (a + c - 2*b)*dx2inv;
+		dx[i] = ((c - b) + (a - b))*dx2inv;
+		//dx[i] = (-2*x[i] + x[i - 1] + x[i + 1])*dx2inv;
+		//dx[i] = (x[i - 1] - 2*x[i] + x[i + 1])*dx2inv;
+		//dx[i] = (x[i - 1] +(- 2*x[i] + x[i + 1]))*dx2inv;
+		//dx[i] = 0.5*((a - 2*b + c) + (c - 2*b + a))*dx2inv;
+		//d12345 = (i == 30)?(d12345):(dx[i]);
+	}
 	dx[dim - 1] = (x[dim - 2] - 3*x[dim - 1])*dx2inv;
-	return 0;
-}
-
-//3-points
-void* Diffusion11(double *x, void *param, double* dx)
-{
-	uint64_t dim = *((uint64_t*)param);
-	double dx2inv = 1/((pos(1) - pos(0))*(pos(1) - pos(0)));
-	dx[0] = (x[dim - 1] -2*x[0] + x[1])*dx2inv;
-	for(unsigned int i = 1; i < dim - 1; ++i)
-		dx[i] = (x[i - 1] - 2*x[i] + x[i + 1])*dx2inv;
-	dx[dim - 1] = (x[dim - 2] - 2*x[dim - 1] + x[0])*dx2inv;
-	return 0;
-}
-
-//3-points
-void* Diffusion21(double *x, void *param, double* dx)
-{
-	uint64_t dim = *((uint64_t*)param);
-	double dx2inv = 1/((pos(1) - pos(0))*(pos(1) - pos(0)));
-	dx[0] = (x[1] -2*x[0] + x[1])*dx2inv;
-	for(unsigned int i = 1; i < dim - 1; ++i)
-		dx[i] = (x[i - 1] - 2*x[i] + x[i + 1])*dx2inv;
-	dx[dim - 1] = (x[dim - 2] - 2*x[dim - 1] + x[dim - 2])*dx2inv;
 	return 0;
 }
 

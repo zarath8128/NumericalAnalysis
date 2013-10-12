@@ -73,7 +73,7 @@ int main()
 		dim = i*100;
 		range.point_num = dim;
 		dx = (range.max - range.min)/dim;
-		for(int j = 1; j < 4; ++j)
+		for(int j = 1; j < 6; ++j)
 		{
 			dt = 0.1*j*dx*dx;
 			std::cout << dt << " " << dim << " " << err(dim, ar_err, dt, ERKMethod, Diffusion2) << std::endl;

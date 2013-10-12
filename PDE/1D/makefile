@@ -1,4 +1,4 @@
-CXXFLAGS=-std=c++0x ${INCLUDEPATH} -O3 -W -Wall
+CXXFLAGS=${INCLUDEPATH} -O3 -W -Wall
 CFLAGS=-std=c99 ${INCLUDEPATH}
 
 INCLUDEPATH=-I${HOME}/NumericalAnalysis -L/opt/X11/lib -I/opt/X11/include
