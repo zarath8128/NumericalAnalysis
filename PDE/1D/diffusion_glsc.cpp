@@ -1,6 +1,7 @@
 #include "ODE/RKMethod/ERKMethod.h"
 #include "ODE/RKMethod/EulerMethod.h"
 #include "ODE/RKMethod/ButcherTable.h"
+#include "Utility/Error/DetectLoss.h"
 #include <cmath>
 #include <stdint.h>
 #include <ctime>
@@ -53,15 +54,20 @@ int main()
 
 	//3point runge-kutta 0.69983 - 0.69984 time:20
 	//5point runge-kutta 0.52487 - 0.52488 time:20
-	double DT = dt = 0.75 * ((range.max - range.min)/dim)*((range.max - range.min)/dim);
+	double DT = dt = 0.5 * ((range.max - range.min)/dim)*((range.max - range.min)/dim);
 
 	for(unsigned int i = 0; i < dim; ++i)
 		x[i] = cos(M_PI*pos(i));
 
+//	for(int i = 0; i < dim; ++i)
+//		std::cout << x[i] - x[dim - 1 - i] << std::endl;
+
+//	exit(0);
+
 	InitializeButcherTable();
 	SetButcherTable(GetButcherTable(RKF45));
 
-	rkmethod rm = ERKMethod;//EulerMethodAuto;//ERKMethod;
+	rkmethod rm = ERKMethod;
 
 	g_init("plot", 150, 100);
 	g_device(G_DISP);

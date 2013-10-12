@@ -2,7 +2,7 @@ CXXFLAGS=${INCLUDEPATH} -O3 -W -Wall
 CFLAGS=-std=c99 ${INCLUDEPATH}
 
 INCLUDEPATH=-I${HOME}/NumericalAnalysis -L/opt/X11/lib -I/opt/X11/include
-LIBRARY=${HOME}/NumericalAnalysis/ODE/RKMethod/libRKMethod.a ${HOME}/NumericalAnalysis/Graphics/GPDriver/libGPDriver.a -lglsc -lX11
+LIBRARY=${HOME}/NumericalAnalysis/ODE/RKMethod/libRKMethod.a ${HOME}/NumericalAnalysis/Graphics/GPDriver/libGPDriver.a -lglsc -lX11 ${HOME}/NumericalAnalysis/Utility/Error/libError.a
 
 TARGET=test diffusion diffusion_glsc diffusion_err driver
 
@@ -18,5 +18,4 @@ diffusion_err:${LIBRARY}
 driver:${LIBRARY}
 
 ${LIBRARY}:
-	
 

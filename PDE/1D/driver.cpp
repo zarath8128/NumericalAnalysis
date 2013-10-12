@@ -68,9 +68,9 @@ int main()
 	InitializeButcherTable();
 	SetButcherTable(GetButcherTable(RungeKutta));
 
-	for(int i = 1; i < 11; i++)
+/*	for(int i = 1; i < 101; i++)
 	{
-		dim = i*100;
+		dim = i*10;
 		range.point_num = dim;
 		dx = (range.max - range.min)/dim;
 		for(int j = 1; j < 6; ++j)
@@ -80,6 +80,25 @@ int main()
 		}
 		std::cout << std::endl;
 	}
+*/
+	for(int i = 1; i < 31; i++)
+	{
+		dim = i*10;
+		range.point_num = dim;
+		dx = (range.max - range.min)/dim;
+		dt = 0.5*dx*dx;
+		std::cout << dt << " " << dim << " " << err(dim, ar_err, dt, ERKMethod, Diffusion1) << std::endl;
+	}
+	std::cout << std::endl;
+	for(int i = 1; i < 31; i++)
+	{
+		dim = i*10;
+		range.point_num = dim;
+		dx = (range.max - range.min)/dim;
+		dt = 0.5*dx*dx;
+		std::cout << dt << " " << dim << " " << err(dim, ar_err, dt, ERKMethod, Diffusion2) << std::endl;
+	}
+
 
 	FinalizeButcherTable();
 }
