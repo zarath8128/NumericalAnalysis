@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <math.h>
 #include "DetectLoss.h"
+#include <fenv.h>
+
+#define M_PI 3.14159265358979323
 
 void printbit(double a)
 {
@@ -14,15 +17,14 @@ void printbit(double a)
 	printf(" ");
 	for(int i =12; i < 64; ++i)
 		printf("%d", (int)((b.b >> (63 - i)) & 1));
-	printf(" %f\n", a);
+	printf(" %.16f\n", a);
 }
 
 int main()
 {
+	fesetround(FE_TOWARDZERO);
 	double a = 0.0122715, b = 0.0736144, c, eps = 1e-12;
 	printf("%g - %g:%d\n", a, b, DetectSignificantLoss(a, b));
-	DoubleBit A = CreateDoubleBit(a), B = CreateDoubleBit(b);
-	printf("%f:%s, %f:%s\n", a, A.significant, b, B.significant);
 	b = 0.06;
 	printf("%g - %g:%d\n", a, b, DetectSignificantLoss(b, a));
 	b = 0.00092;
@@ -70,6 +72,49 @@ int main()
 	printbit(b);
 	printbit(b - a);
 	
+	printf("\n\n---------------------\n\n");
+
+	a = 0, b = 1;
+	printf("%f %f:%d\n", a, b, DetectInformationLoss(a, b));
+
+	uint64_t j = 0;
+
+	a = 0, b = 0;
+
+	while(54 != DetectInformationLoss(a, 1./(++j * j)))
+	{
+		c = 1./j * (1./j);
+		a = (b = a) + c;
+	}
+
+	j--;
+
+	printf("a        :%f", a);
+	printbit(a);
+	printf("b        :%f", b);
+	printbit(b);
+	printf("b + next :%f", b + 1./j*(1./j));
+	printbit(b + (1./(j*j)));
+	printf("b + next2:%f", b + 1./j*(1./j) + 1./(j + 1)*(1./(j + 1)));
+	printbit(b + (1./(j*j)) + 1./((j + 1)*(j + 1)));
+
+	a = 0;
+	printf("j = %e\n", 1./j*(1./j));
+	c = 0;
+	for(int i = 1; i < j + 1; ++i)
+	{
+		eps = 1./i*(1./i);
+		c += eps - ((a = (b = a) + eps) - b);
+	}
+	printf("c:%.15e\n", c);
+
+	printf("new a    :%f", a);
+	printbit(a);
+	a += c;
+	printf("new a2   :%f", a);
+	printbit(a);
+	printf("exact    :%f", M_PI*M_PI*(1./6));
+	printbit(M_PI*M_PI*(1./6));
 
 	return 0;
 }
