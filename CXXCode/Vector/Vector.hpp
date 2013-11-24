@@ -42,7 +42,19 @@ namespace zarath
 			~Vector(){delete [] val;}
 
 			double &operator[](uint64_t index){return val[index];} 
-			const Vector &operator=(Vector &v){for(uint64_t i = 0; i < dim; ++i)val[i] = v[i];return *this;}
+			const Vector &operator=(Vector &v)
+			{
+				for(uint64_t i = 0; i < dim - 2*(rem?1:0); i += 2)
+				{
+					val[i] = v.val[i];
+					val[i + 1] = v.val[i + 1];
+					//val[i + 2] = v.val[i + 2];
+					//val[i + 3] = v.val[i + 3];
+				}
+				for(uint64_t i = 0; i < rem; ++i)
+					val[2*quo + i] = v.val[2*quo + i];
+				return *this;
+			}
 			const Vector &operator=(Vector &&v){val = v.val; v.val = nullptr;return *this;}
 			bool operator==(Vector &v){for(uint64_t i = 0; i < dim; ++i)if(v[i] != val[i])return false;return true;}
 			bool operator!=(Vector &v){return !(*this == v);}
@@ -57,8 +69,16 @@ namespace zarath
 			static void Add(double *a, double *b, double *ans){for(uint64_t i = 0; i < dim; ++i)ans[i] = a[i] + b[i];}
 			static void Sub(double *a, double *b, double *ans){for(uint64_t i = 0; i < dim; ++i)ans[i] = a[i] - b[i];}
 			static void Mul(double *a, double *b, double *ans){for(uint64_t i = 0; i < dim; ++i)ans[i] = a[i] * *b;}
+			static constexpr uint64_t rem = dim % 2;
+			static constexpr uint64_t quo = dim / 2;
 			double *val;
 		};
+
+		template<uint64_t dim>
+		constexpr uint64_t Vector<dim>::rem;
+
+		template<uint64_t dim>
+		constexpr uint64_t Vector<dim>::quo;
 
 		template<uint64_t dim>
 		std::ostream &operator<<(std::ostream &dest, Vector<dim> &src)
