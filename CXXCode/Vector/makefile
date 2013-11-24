@@ -1,5 +1,5 @@
-FLAGS=-W -Wall
-CXXFLAGS=${FLAGS} -std=c++0x -lstdc++
+FLAGS=-W -Wall -O3
+CXXFLAGS=${FLAGS} -std=c++0x 
 HEADER=Vector.hpp
 EXEC=test
 ALL=${EXEC}
