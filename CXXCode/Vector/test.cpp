@@ -44,7 +44,6 @@ int main()
 	a = b;
 	clock_t t3 = clock();
 
-	
 
 	std::cout << "Vector   time = " << (t1 - t0)/(double)CLOCKS_PER_SEC << std::endl;
 	std::cout << "double[] time = " << (t2 - t1)/(double)CLOCKS_PER_SEC << std::endl;
