@@ -1,5 +1,5 @@
-FLAGS=-W -Wall -lm -static
-CFLAGS=${FLAGS} -std=c99
+FLAGS=-W -Wall -lm
+CFLAGS=${FLAGS} -std=c99 -lstdc++
 CXXFLAGS=${FLAGS} -std=c++0x
 HEADER=ApproximatePolyminal.h
 OBJECT=Lagrange.o Newton.o

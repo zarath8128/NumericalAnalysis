@@ -14,7 +14,7 @@ int main()
 	Lagrange L = CreateLagrange(x, y, dim);
 
 	for(uint64_t i = 0; i < dim*300; ++i)
-		printf("%f %.15f\n", (px = i*(max - min)/(dim*300 - 1) + min), LagrangeInterpolation(px, L));
+		px = i*(max - min)/(dim*300 - 1) + min, printf("%f %.15f\n", px, LagrangeInterpolation(px, L));
 		//printf("%f %f\n", x[i], LagrangeInterpolation(x[i], L));
 		//printf("%f %f\n", L.x[i], L.inv[i]);
 
