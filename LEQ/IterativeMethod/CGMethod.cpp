@@ -1,5 +1,6 @@
 #include "CGMethod.h"
 #include "InnerProduct.h"
+#include <iostream>
 
 void mul(double*, double*, double*, uint64_t);
 
@@ -13,6 +14,7 @@ extern "C"
 		double *Ap = new double[dim];
 		mul(A, x, Ap, dim);
 
+
 		for(uint64_t i = 0; i < dim; ++i)
 			r[i] = p[i] = b[i] - Ap[i];
 
@@ -21,15 +23,26 @@ extern "C"
 			mul(A, p, Ap, dim);
 			double alpha = InnerProduct(r, 0, p, dim)/InnerProduct(p, 0, Ap, dim);
 			double beta = 1./InnerProduct(r, 0, r, dim);
+
 			for(uint64_t i = 0; i < dim; ++i)
 				x[i] += alpha*p[i], r[i] -= alpha*Ap[i];
+
 			double gamma = InnerProduct(r, 0, r, dim);
 			if(gamma < eps)
+			{
+				delete [] r;
+				delete [] p;
+				delete [] Ap;
 				return k + 1;
+			}
 			beta *= gamma;
 			for(uint64_t i = 0; i < dim; ++i)
 				p[i] = r[i] + beta*p[i];
 		}
+		delete [] r;
+		delete [] p;
+		delete [] Ap;
+		return max;
 	}
 }
 

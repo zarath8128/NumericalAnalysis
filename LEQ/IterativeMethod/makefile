@@ -1,6 +1,6 @@
-FLAGS=-W -Wall -O2
-CFLAGS=-lstdc++
-CXXFLAGS=-std=c++0x
+FLAGS=-W -Wall -O3
+CFLAGS=${FLAGS} -lstdc++ -std=c99
+CXXFLAGS=${FLAGS} -std=c++0x -lpthread
 OBJECT=InnerProduct.o CGMethod.o
 EXEC=test
 ALL=${EXEC} ${OBJECT}
